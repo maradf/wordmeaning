@@ -1,9 +1,11 @@
 import torch 
 import one_hot as oh
 import universe as uni
+import models as model
 
 import unicodedata
 import string
+
 
 all_letters = string.ascii_lowercase
 n_letters = len(all_letters)
@@ -15,7 +17,11 @@ n_pairs = int(world_size/2)
 
 world = uni.InterpretedLanguage(rel_num=4, num_pairs = n_pairs)
 all_relations = world.allexamples(b="l")
-all_individuals = []
+X_train, y_train, X_val, y_val, X_test, y_test = world.dataset("l")
+print("x train", X_train)
+all_individuals = world.reserved_chars
+vec_X_train = world.model_input(X_train, 5)
+print("vec X train", vec_X_train)
 all_lefthand_sides = []
 relations_per_idividuals = dict()
 
@@ -29,14 +35,14 @@ for elem in all_relations:
     else:
         relations_per_idividuals[elem[1]] = [elem[0]]
 
-print(relations_per_idividuals)
+# print(relations_per_idividuals)
 
-print(all_lefthand_sides)
+# print(all_lefthand_sides)
 
-print(all_individuals)
+# print(all_individuals)
 y = oh.one_hot_golden_standard(all_relations)
 
-print(lineToTensor("asp").size())
+# print(lineToTensor("asp").size())
 # # print("y_hat: ", y_hat)
 # criterion = torch.nn.CrossEntropyLoss()
 # criterion(y_hat, y.argmax())
