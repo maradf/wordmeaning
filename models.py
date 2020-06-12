@@ -40,7 +40,10 @@ class myLSTM(nn.Module):
             embedding_dim=self.embedding_dim,
             padding_idx=padding_idx
         )).__init__()
-
+        self.word_embedding = nn.Embedding(num_embeddings=nb_vocab_words,
+            embedding_dim=self.embedding_dim,
+            padding_idx=padding_idx
+        )
         # design LSTM
         self.lstm = nn.LSTM(
             input_size=self.embedding_dim,
@@ -53,12 +56,8 @@ class myLSTM(nn.Module):
 
     def init_hidden(self):
         # the weights are of the form (nb_layers, batch_size, nb_lstm_units)
-        hidden_a = torch.randn(self.hparams.nb_lstm_layers, self.batch_size, self.nb_lstm_units)
-        hidden_b = torch.randn(self.hparams.nb_lstm_layers, self.batch_size, self.nb_lstm_units)
-
-        if self.hparams.on_gpu:
-            hidden_a = hidden_a.cuda()
-            hidden_b = hidden_b.cuda()
+        hidden_a = torch.randn(self.nb_layers, self.batch_size, self.nb_lstm_units)
+        hidden_b = torch.randn(self.nb_layers, self.batch_size, self.nb_lstm_units)
 
         hidden_a = Variable(hidden_a)
         hidden_b = Variable(hidden_b)
@@ -67,12 +66,13 @@ class myLSTM(nn.Module):
         # reset the LSTM hidden state. Must be done before you run a new batch. Otherwise the LSTM will treat
         # a new batch as a continuation of a sequence
         self.hidden = self.init_hidden()
-
-        batch_size, seq_len, _ = X.size()
+        print(X.size())
+        batch_size, seq_len = X.size()
 
         # ---------------------
         # 1. embed the input
         # Dim transformation: (batch_size, seq_len, 1) -> (batch_size, seq_len, embedding_dim)
+        print(self.word_embedding)
         X = self.word_embedding(X)
 
         # ---------------------
@@ -81,7 +81,7 @@ class myLSTM(nn.Module):
         # Dim transformation: (batch_size, seq_len, embedding_dim) -> (batch_size, seq_len, nb_lstm_units)
 
         # pack_padded_sequence so that padded items in the sequence won't be shown to the LSTM
-        X = torch.nn.utils.rnn.pack_padded_sequence(x, X_lengths, batch_first=True)
+        X = torch.nn.utils.rnn.pack_padded_sequence(X, X_lengths, batch_first=True, enforce_sorted=False)
 
         # now run through LSTM
         X, self.hidden = self.lstm(X, self.hidden)
