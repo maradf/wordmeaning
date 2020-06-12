@@ -1,7 +1,8 @@
 import torch 
 import one_hot as oh
-import universe as uni
-import models as model
+from universe import InterpretedLanguage
+
+from models import myLSTM
 
 import unicodedata
 import string
@@ -15,34 +16,18 @@ n_letters = len(all_letters)
 world_size = 4
 n_pairs = int(world_size/2)
 
-world = uni.InterpretedLanguage(rel_num=4, num_pairs = n_pairs)
+world = InterpretedLanguage(rel_num=4, num_pairs = n_pairs)
 all_relations = world.allexamples(b="l")
 X_train, y_train, X_val, y_val, X_test, y_test = world.dataset("l")
-print("x train", X_train)
 all_individuals = world.reserved_chars
 vec_X_train = world.model_input(X_train, 5)
-print("vec X train", vec_X_train)
-all_lefthand_sides = []
-relations_per_idividuals = dict()
+vec_y_train = world.model_input(y_train, 0)
+vec_X_val = world.model_input(X_val, 5)
+vec_y_val = world.model_input(y_val, 0)
+vec_X_test = world.model_input(X_test, 5)
+vec_y_test = world.model_input(y_test, 0)
+indiv2idx = world.indiv2idx
+char2idx = world.char2idx
 
-for i in range(world_size):
-    all_individuals.append(all_relations[i][0])
 
-for elem in all_relations:
-    all_lefthand_sides.append(elem[0])
-    if elem[1] in relations_per_idividuals.keys():
-        relations_per_idividuals[elem[1]].append(elem[0])
-    else:
-        relations_per_idividuals[elem[1]] = [elem[0]]
-
-# print(relations_per_idividuals)
-
-# print(all_lefthand_sides)
-
-# print(all_individuals)
-y = oh.one_hot_golden_standard(all_relations)
-
-# print(lineToTensor("asp").size())
-# # print("y_hat: ", y_hat)
-# criterion = torch.nn.CrossEntropyLoss()
-# criterion(y_hat, y.argmax())
+lstm = myLSTM(nb_layers=8, indiv2idx=indiv2idx, char2idx=char2idx, batch_size=1)

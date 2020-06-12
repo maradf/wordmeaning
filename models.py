@@ -11,10 +11,10 @@ https://medium.com/@_willfalcon/taming-lstms-variable-sized-mini-batches-and-why
 
 
 class myLSTM(nn.Module):
-    def __init__(self, nb_layers, nb_lstm_units=100, embedding_dim=3, batch_size=3, indiv2idx, char2idx):
+    def __init__(self, nb_layers, indiv2idx, char2idx, nb_lstm_units=100, embedding_dim=3, batch_size=3):
         self.vocab = char2idx
         self.tags = indiv2idx
-
+        super(myLSTM, self).__init__()
         self.nb_layers = nb_layers
         self.nb_lstm_units = nb_lstm_units
         self.embedding_dim = embedding_dim
@@ -24,30 +24,29 @@ class myLSTM(nn.Module):
         self.nb_tags = len(self.tags) - 1
 
         # when the model is bidirectional we double the output dimension
-        self.lstm
+        self.lstm = []
 
         # build actual NN
-        self.__build_model()
+        # self.__build_model()
 
-    def __build_model(self):
+    # def __build_model(self):
         # build embedding layer first
         nb_vocab_words = len(self.vocab)
 
         # whenever the embedding sees the padding index it'll make the whole vector zeros
-        padding_idx = self.vocab['0']
-        self.word_embedding = nn.Embedding(
-            num_embeddings=nb_vocab_words,
+        padding_idx = self.vocab["0"]
+        self.word_embedding = super(nn.Embedding, 
+            nn.Embedding(num_embeddings=nb_vocab_words,
             embedding_dim=self.embedding_dim,
             padding_idx=padding_idx
-        )
+        )).__init__()
 
         # design LSTM
         self.lstm = nn.LSTM(
             input_size=self.embedding_dim,
             hidden_size=self.nb_lstm_units,
-            num_layers=self.nb_lstm_layers,
-            batch_first=True,
-        )
+            num_layers=self.nb_layers,
+            batch_first=True)
 
         # output layer which projects back to tag space
         self.hidden_to_tag = nn.Linear(self.nb_lstm_units, self.nb_tags)
@@ -64,7 +63,7 @@ class myLSTM(nn.Module):
         hidden_a = Variable(hidden_a)
         hidden_b = Variable(hidden_b)
     
-        def forward(self, X, X_lengths):
+    def forward(self, X, X_lengths):
         # reset the LSTM hidden state. Must be done before you run a new batch. Otherwise the LSTM will treat
         # a new batch as a continuation of a sequence
         self.hidden = self.init_hidden()
@@ -114,6 +113,6 @@ class myLSTM(nn.Module):
 
     
     def loss(self, y_hat, y):
-        criterion = torch.nn.CrossEntropyLoss(ignore_index=0)
+        criterion = torch.nn.CrossEntropyLoss(size_average=True, ignore_index=0)
         ce_loss = criterion(y_hat, y.argmax())
         return ce_loss
