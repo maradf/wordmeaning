@@ -56,7 +56,12 @@ class InterpretedLanguage:
         for i in range(len(names)):
              self.child[names[i-1]]=names[i]
         self.names=names
+
         self.reserved_chars = reserved_chars
+
+        chars = list(set(self.reserved_chars + self.names + ['0']))
+        self.char2idx = {o:i for i,o in enumerate(sorted(chars))}
+        self.indiv2idx = {o:i for i,o in enumerate(sorted(self.names))}
 
     def examples(self,i):
         '''returns all logical forms of complexity (length) i 
@@ -158,9 +163,19 @@ class InterpretedLanguage:
         y_test = y_test1 +y_test2
         X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=0.2)
         
+        for name in self.names:
+            if name not in X_train:
+                X_train.append(name)
+                y_train.append(name)
+        
         return X_train, y_train, X_val, y_val, X_test, y_test
 
-    def model_input(self, vec, max_size):
+    def sentence_lengths(self, sentences):
+        lengths = [len(sentence) for sentence in sentences]
+        # return torch.tensor(lengths)
+        return lengths
+
+    def model_input(self, vec, max_size, version):
         """ Changes a list 'vec' to a torch.LongTensor with paddings
             until length 'max_size' 
         """
@@ -178,7 +193,12 @@ class InterpretedLanguage:
         
         # Create a list with all the right indices and return as longtensor
         results = [ [] for _ in range(len(vec))]
-        for rel in range(len(vec)):
-            results[rel] = [char2idx[ch] for ch in vec[rel]]
+        
+        if version == "in":
+            for rel in range(len(vec)):
+                results[rel] = [char2idx[ch] for ch in vec[rel]]
+        elif version == "out":
+            for rel in range(len(vec)):
+                results[rel] = [self.indiv2idx[ch] for ch in vec[rel]]
 
         return torch.LongTensor(results)

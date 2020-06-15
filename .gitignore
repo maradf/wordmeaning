@@ -1,4 +1,9 @@
 practice/
+Denis/
+*.ipynb
+dataset_janne.py
+*.zip
+models2.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
