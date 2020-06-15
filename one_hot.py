@@ -1,7 +1,7 @@
 import numpy as np
 
 import universe as uni
-
+import string
 
 all_letters = string.ascii_lowercase
 n_letters = len(all_letters)
