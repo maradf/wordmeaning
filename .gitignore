@@ -4,6 +4,7 @@ Denis/
 dataset_janne.py
 *.zip
 models2.py
+Models*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
