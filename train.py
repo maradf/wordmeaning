@@ -20,55 +20,12 @@ import pickle
 all_letters = string.ascii_lowercase
 n_letters = len(all_letters)
 
-n_training_runs = 1000
 learningrate = 0.01
 
 
 world_size = 10
 n_pairs = int(world_size/2)
 # batch_size = 2
-
-
-
-def train_model(model, X_train, y_train, epochs=10):
-    for i in range(epochs):
-        model.train()
-        sum_loss = 0.0
-        total = 0
-        x = X_train.long()
-        y = y_train.long()
-        y_pred = model(x)
-        y_pred = y_pred.reshape([52, 1])
-
-        #optimizer.zero_grad()
-        loss = criterion(out, torch.max(y_train, 1)[1])
-
-        loss.backward(retain_graph=True)
-        #optimizer.step()
-        sum_loss += loss.item()*y.shape[0]
-        total += y.shape[0]
-        val_loss, val_acc = validation_metrics(model, val_x, val_y)
-        if i % 5 == 1:
-            print("train loss {}, val loss {}, val accuracy {}".format(sum_loss/total, val_loss, val_acc))
-
-
-def validation_metrics (model, val_x, val_y):
-    model.eval()
-    correct = 0
-    total = 0
-    sum_loss = 0.0
-    sum_rmse = 0.0
-    x = val_x.long()
-    y = val_y.long()
-    y_hat = model(x)
-    y_hat = y_hat.reshape([14, 1])
-    loss = criterion(y_hat, torch.max(y, 1)[1])
-    pred = torch.max(y_hat, 1)[1]
-    correct += (pred == y).float().sum()
-    total += y.shape[0]
-    sum_loss += loss.item()*y.shape[0]
-    #sum_rmse += np.sqrt(mean_squared_error(pred, y.unsqueeze(-1)))*y.shape[0]
-    return sum_loss/total, correct/total
 
 
 world = InterpretedLanguage(rel_num=4, num_pairs = n_pairs)
@@ -79,8 +36,6 @@ all_individuals = world.names
 X_train_lengths = world.sentence_lengths(X_train)
 X_val_lengths = world.sentence_lengths(X_val)
 X_test_lengths = world.sentence_lengths(X_test)
-# print(X_train)
-# print(X_train_lengths)
 vec_X_train = world.model_input(X_train, 5, "in")
 vec_y_train = world.model_input(y_train, 0, "out")
 vec_X_val = world.model_input(X_val, 5, "in")
@@ -89,8 +44,6 @@ vec_X_test = world.model_input(X_test, 5, "in")
 vec_y_test = world.model_input(y_test, 0, "out")
 indiv2idx = world.indiv2idx
 char2idx = world.char2idx
-
-
 
 HIDDEN_DIM = len(world.char2idx)
 EMBEDDING_DIM = 256
@@ -106,15 +59,23 @@ val_acc = []
 nth_iter = 0
 pickle.dump(vec_y_train, open("Results_10_indiv/vec_y_train.p", "wb"))
 pickle.dump(vec_y_train, open("Results_10_indiv/vec_y_val.p", "wb"))
+curr_learning_x = world.model_input(world.names, 0, "in")
+curr_learning_y = world.model_input(world.names, 0, "out")
 
-for epoch in range(200):  
-    # random.shuffle(vec_X_train)
-    # print(vec_y_train)
+for epoch in range(10):  
+
     for i in range(len(vec_X_train)):
         model.train()
-        train_out = model(vec_X_train[i])
-        train_out2 = train_out[:, -1] # pick the last output vecs. of the sequence for every example in the batch
-        loss = criterion(train_out, vec_y_train[i])
+
+        if nth_iter < len(curr_learning_x):
+            x = curr_learning_x[i]
+            y = curr_learning_y[i]
+        else:
+            x = vec_X_train[i]
+            y = vec_y_train[i]
+        train_out = model(x)
+        # train_out2 = train_out[:, -1] # pick the last output vecs. of the sequence for every example in the batch
+        loss = criterion(train_out, y)
         optimizer.zero_grad()
         torch.autograd.set_detect_anomaly(True)
         loss.backward(retain_graph=True)
