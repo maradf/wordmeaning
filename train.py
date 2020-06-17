@@ -23,7 +23,7 @@ n_letters = len(all_letters)
 learningrate = 0.01
 
 
-world_size = 50
+world_size = 100
 n_pairs = int(world_size/2)
 # batch_size = 2
 
@@ -66,8 +66,8 @@ val_losses = []
 train_acc = []
 val_acc = []
 nth_iter = 0
-pickle_path = "Results_100_2_indiv/"
-model_path = "Models_100_2_indiv/"
+pickle_path = "Results_{}_indiv/".format(world_size)
+model_path = "Models_{}_indiv/".format(world_size)
 
 if not os.path.isdir(pickle_path):
     os.makedirs(pickle_path)
@@ -80,7 +80,7 @@ pickle.dump(y_train, open(pickle_path  + "y_val.p", "wb"))
 curr_learning_x = world.model_input(world.names, "in")
 curr_learning_y = world.model_input(world.names, "out")
 num_loops = 200
-begin = 151
+begin = 0
 for loop in range(begin, num_loops):  
 
     correct = 0
@@ -102,7 +102,7 @@ for loop in range(begin, num_loops):
         loss.backward(retain_graph=True)
         optimizer.step()
     
-        if (nth_iter) % 50 == 0:
+        if (nth_iter) % 500 == 0:
             print("Iteration\t {} out of {}".format(nth_iter+1, num_loops*(len(X_train))))
             print("\t\t {:.2f}%".format(((1 + nth_iter)*100) / (num_loops*(len(X_train)))))
             print("Loss\t\t {}\n".format(loss.item()))
@@ -112,14 +112,12 @@ for loop in range(begin, num_loops):
             pickle.dump(train_out.argmax(axis=1), open(pickle_path  + "train_out.p", "wb"))
         nth_iter += 1
 
-        122800
         if train_out.argmax(axis=1) == y:
             correct += 1
         
-    total = len(train_out)
+    total = len(X_train)
     train_acc.append(correct / total)
-    pickle.dump(train_acc, open(pickle_path  + "train_acc.p", "wb"))
-    
+    pickle.dump(train_acc, open(pickle_path  + "train_acc.p", "wb"))    
     losses.append(loss.item())
     
     for i in range(len(X_val)):
