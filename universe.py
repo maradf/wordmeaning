@@ -175,7 +175,7 @@ class InterpretedLanguage:
         # return torch.tensor(lengths)
         return lengths
 
-    def model_input(self, vec, max_size, version):
+    def model_input(self, vec, version):
         """ Changes a list 'vec' to a torch.LongTensor with paddings
             until length 'max_size' 
         """
@@ -189,7 +189,7 @@ class InterpretedLanguage:
         idx2char = {i:o for i,o in enumerate(sorted(chars))}
 
         # Padd the input vector to the specified maximum size
-        vec = [vec[rel].zfill(max_size) for rel in range(len(vec))]
+        # vec = [vec[rel].zfill(max_size) for rel in range(len(vec))]
         
         # Create a list with all the right indices and return as longtensor
         results = [ [] for _ in range(len(vec))]
@@ -200,5 +200,5 @@ class InterpretedLanguage:
         elif version == "out":
             for rel in range(len(vec)):
                 results[rel] = [self.indiv2idx[ch] for ch in vec[rel]]
-
-        return torch.LongTensor(results)
+        # print(results.shape())
+        return results

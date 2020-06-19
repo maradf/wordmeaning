@@ -9,7 +9,57 @@ Taming LSTMs: Variable-sized mini-batches and why PyTorch is good for your healt
 https://medium.com/@_willfalcon/taming-lstms-variable-sized-mini-batches-and-why-pytorch-is-good-for-your-health-61d35642972e
 """
 
+class myLSTM(torch.nn.Module) :
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, batch_size, num_targets):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        #self.dropout = nn.Dropout(0.3)
+        self.batch_size = batch_size
+        self.num_targets = num_targets
+        self.embeddings = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True)
+        self.linear = nn.Linear(self.hidden_dim, self.num_targets)
+        
+        self.h = torch.zeros((2, batch_size, hidden_dim))
+        self.c = torch.zeros((2, batch_size, hidden_dim))
+        
 
+        
+    def forward(self, x):
+
+        x = self.embeddings(x)
+        self.batch_size = x.size(0)
+        
+        seq_len = x.size(1)
+        seq_len = torch.as_tensor([seq_len], dtype=torch.int64, device='cpu')
+    
+        #x = self.dropout(x)
+#        x_pack = torch.nn.utils.rnn.pack_padded_sequence(x, seq_len, batch_first=True, enforce_sorted=False)
+        out, (h, c) = self.lstm(x) # x_pack
+    
+#         print(h.shape)
+#         self.h = h
+#         self.c = c
+    
+        
+#         print("ht", h.shape)
+        
+#         print(x_pack)
+#        out, _ = torch.nn.utils.rnn.pad_packed_sequence(out_pack, batch_first=True)
+#       print("out_pack", out_pack.shape)
+#        print(out.shape)
+
+
+
+        #out = out_pack
+        out = self.linear(out)
+        return out
+
+    def load(self, location):
+        self.lstm.load_state_dict(torch.load(location))
+        self.lstm.eval()
+
+"""
 class myLSTM(nn.Module):
     
     def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, num_layers):
@@ -38,30 +88,10 @@ class myLSTM(nn.Module):
         out = self.hidden2label(y[-1])
         return out
 
-        # undo the packing operation
-        # X, _ = torch.nn.utils.rnn.pad_packed_sequence(X, batch_first=True)
-
-        # ---------------------
-        # 3. Project to tag space
-        # Dim transformation: (batch_size, seq_len, hidden_dim) -> (batch_size * seq_len, hidden_dim)
-
-        # this one is a bit tricky as well. First we need to reshape the data so it goes into the linear layer
-        # X = X.contiguous()
-        # X = X.view(-1, X.shape[2])
-
-        # run through actual linear layer
-        # X = self.hidden_to_tag(X)
-        # ---------------------
-        # 4. Create softmax activations bc we're doing classification
-        # Dim transformation: (batch_size * seq_len, hidden_dim) -> (batch_size, seq_len, nb_tags)
-        # X = F.log_softmax(out, dim=1)
-
-        # I like to reshape for mental sanity so we're back to (batch_size, seq_len, nb_tags)
-        # X = X.view(batch_size, seq_len, self.nb_tags)
-
 
     
     def loss(self, y_hat, y):
         criterion = torch.nn.CrossEntropyLoss(size_average=True, ignore_index=0)
         ce_loss = criterion(y_hat, y.argmax())
         return ce_loss
+"""
