@@ -75,10 +75,7 @@ class myLSTM(nn.Module):
 
         # now run through LSTM
         y, self.hidden = self.lstm(x, self.hidden)
-        print("y = ", y.shape)
         out = self.hidden2label(y[-1])
-        print("out size = ", out.size())
-        print("hidden_to_label", self.hidden2label)
         return out
 
 
