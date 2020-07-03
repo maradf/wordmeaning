@@ -9,6 +9,7 @@ Results*/
 *.png
 *.pdf
 *.pptx
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
