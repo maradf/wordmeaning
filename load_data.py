@@ -6,34 +6,13 @@ import torch.utils as Data
 import universe
 
 SEED = 501
+def prepare_sequence(sequence, to_ix):
+    new_sequence = autograd.Variable(torch.LongTensor([to_ix[i] for i in sequence]))
+    return new_sequence
 
-# def load_data(rel_num, num_pairs, branching="l", complexity=3):
-#     print("Generating data...")
-#     L = universe.InterpretedLanguage(rel_num, num_pairs)
-#     k = num_pairs * 5 * rel_num
-
-#     the_data = L.allexamples(branching, complexity=complexity-1)
-#     print("complexity", complexity)
-#     random.seed(SEED)
-#     random.shuffle(the_data)
-#     the_datasize = len(the_data)
-#     print("the_data", the_datasize)
-#     devtest = L.allexamples(branching, complexity, min_complexity=complexity)
-#     random.shuffle(devtest)
-#     val_datasize = len(devtest)
-#     print("datasize", val_datasize)
-    
-#     p = 0.8
-#     split_point1 = int(val_datasize*0.8)
-#     split_point2 = int(val_datasize*(p+(1-p)*0.55))
-    
-#     train_data = the_data + devtest[:split_point1]
-
-#     val_data = devtest[split_point1:split_point2]
-
-#     test_data = devtest[split_point2:]
-
-#     print("Total data: {}\nTrain: {}\nVal: {}\nTest: {}".format(the_datasize + val_datasize, len(train_data), len(val_data), len(test_data)))
+def prepare_label(label,label_to_ix, cuda=False):
+    var = autograd.Variable(torch.LongTensor([label_to_ix[label]]))
+    return var
 
 def build_token_to_ix(sentences):
     token_to_ix = dict()
@@ -88,5 +67,6 @@ def load_MR_data():
     print("label_to_ix = ", label_to_ix)
     print('vocab size:',len(word_to_ix),'label size:',len(label_to_ix))
     print("Data generation done.")
-# load_data(2, 4)
-load_MR_data()
+
+    return train_data,val_data,test_data,word_to_ix,label_to_ix,complexity
+
