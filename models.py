@@ -8,12 +8,11 @@ Blog post:
 Taming LSTMs: Variable-sized mini-batches and why PyTorch is good for your health:
 https://medium.com/@_willfalcon/taming-lstms-variable-sized-mini-batches-and-why-pytorch-is-good-for-your-health-61d35642972e
 """
-
+""" 
 class myLSTM(torch.nn.Module) :
     def __init__(self, vocab_size, embedding_dim, hidden_dim, batch_size, num_targets):
         super().__init__()
         self.hidden_dim = hidden_dim
-        #self.dropout = nn.Dropout(0.3)
         self.batch_size = batch_size
         self.num_targets = num_targets
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
@@ -37,18 +36,6 @@ class myLSTM(torch.nn.Module) :
 #        x_pack = torch.nn.utils.rnn.pack_padded_sequence(x, seq_len, batch_first=True, enforce_sorted=False)
         out, (h, c) = self.lstm(x) # x_pack
     
-#         print(h.shape)
-#         self.h = h
-#         self.c = c
-    
-        
-#         print("ht", h.shape)
-        
-#         print(x_pack)
-#        out, _ = torch.nn.utils.rnn.pad_packed_sequence(out_pack, batch_first=True)
-#       print("out_pack", out_pack.shape)
-#        print(out.shape)
-
 
 
         #out = out_pack
@@ -62,16 +49,19 @@ class myLSTM(torch.nn.Module) :
 """
 class myLSTM(nn.Module):
     
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, num_layers):
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, num_layers, bidirectional):
         super(myLSTM, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
+        self.num_directions=1+int(bidirectional)
         self.word_embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers=num_layers)
-        self.hidden2label = nn.Linear(hidden_dim, label_size)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers=num_layers, bidirectional=bidirectional)
+        self.hidden2label = nn.Linear(hidden_dim*self.num_directions, label_size)
         self.hidden = self.init_hidden()
 
     def init_hidden(self):
+        # the first is the hidden h
+        # the second is the cell  c
         return (autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)),
                 autograd.Variable(torch.zeros(self.num_layers, 1, self.hidden_dim)))
 
@@ -85,7 +75,10 @@ class myLSTM(nn.Module):
 
         # now run through LSTM
         y, self.hidden = self.lstm(x, self.hidden)
+        print("y = ", y.shape)
         out = self.hidden2label(y[-1])
+        print("out size = ", out.size())
+        print("hidden_to_label", self.hidden2label)
         return out
 
 
@@ -94,4 +87,3 @@ class myLSTM(nn.Module):
         criterion = torch.nn.CrossEntropyLoss(size_average=True, ignore_index=0)
         ce_loss = criterion(y_hat, y.argmax())
         return ce_loss
-"""

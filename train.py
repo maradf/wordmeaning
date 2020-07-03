@@ -1,3 +1,4 @@
+import sys
 import torch 
 import torch.optim as optim
 from torch.optim import Adam
@@ -17,13 +18,10 @@ import random
 
 import pickle
 
-all_letters = string.ascii_lowercase
-n_letters = len(all_letters)
-
-learningrate = 0.01
 
 
-world_size = 100
+
+world_size = 4
 n_pairs = int(world_size/2)
 # batch_size = 2
 
@@ -48,39 +46,52 @@ char2idx = world.char2idx
 # HIDDEN_DIM = len(world.char2idx)
 # EMBEDDING_DIM = 18
 
-EMBEDDING_DIM = 256
-HIDDEN_DIM = len(world.char2idx)
-batch_size = 1
-NUM_TARGETS = len(world.names) # len(set([l.item() for l in y_train])) # excluding some 
-
-model = myLSTM(len(world.char2idx), EMBEDDING_DIM, HIDDEN_DIM, batch_size, NUM_TARGETS)
-# model.load_state_dict(torch.load("Models_100_indiv/LSTM_iteration_52100.pt"))
-# lstm.eval()
-
-# model = myLSTM(embedding_dim=EMBEDDING_DIM, hidden_dim = HIDDEN_DIM, vocab_size=len(char2idx), label_size=len(indiv2idx), num_layers=1)
-optimizer = Adam(model.parameters(), lr=learningrate)
-criterion = torch.nn.CrossEntropyLoss()
 
 losses = []
 val_losses = []
 train_acc = []
 val_acc = []
 nth_iter = 0
-pickle_path = "Results_{}_indiv/".format(world_size)
-model_path = "Models_{}_indiv/".format(world_size)
+# pickle_path = "Results_{}_indiv/".format(world_size)
+# model_path = "Models_{}_indiv/".format(world_size)
 
-if not os.path.isdir(pickle_path):
-    os.makedirs(pickle_path)
+# if not os.path.isdir(pickle_path):
+#     os.makedirs(pickle_path)
 
-if not os.path.isdir(model_path):
-    os.makedirs(model_path)
+# if not os.path.isdir(model_path):
+#     os.makedirs(model_path)
 
-pickle.dump(y_train, open(pickle_path  + "y_train.p", "wb"))
-pickle.dump(y_train, open(pickle_path  + "y_val.p", "wb"))
+# pickle.dump(y_train, open(pickle_path  + "y_train.p", "wb"))
+# pickle.dump(y_train, open(pickle_path  + "y_val.p", "wb"))
 curr_learning_x = world.model_input(world.names, "in")
 curr_learning_y = world.model_input(world.names, "out")
 num_loops = 200
 begin = 0
+print(X_train)
+
+def train():
+    EMBEDDING_DIM = 256
+    HIDDEN_DIM = len(world.char2idx)
+    BATCH_SIZE = 1
+    LABEL_SIZE = len(world.names) # len(set([l.item() for l in y_train])) # excluding some 
+    BIDIRECTIONAL= "bidirectional" in sys.argv
+    VOCAB_SIZE = len(world.char2idx)
+    LEARNING_RATE = 1e-3
+
+    model = myLSTM(embedding_dim=EMBEDDING_DIM, 
+                    hidden_dim=HIDDEN_DIM,
+                    vocab_size=VOCAB_SIZE,
+                    label_size=LABEL_SIZE,
+                    num_layers=1, bidirectional=BIDIRECTIONAL)
+    # model.load_state_dict(torch.load("Models_100_indiv/LSTM_iteration_52100.pt"))
+    # lstm.eval()
+
+    # model = myLSTM(embedding_dim=EMBEDDING_DIM, hidden_dim = HIDDEN_DIM, vocab_size=len(char2idx), label_size=len(indiv2idx), num_layers=1)
+    optimizer = Adam(model.parameters(), lr=learningrate)
+    criterion = torch.nn.CrossEntropyLoss()
+
+
+
 for loop in range(begin, num_loops):  
 
     correct = 0
@@ -94,7 +105,10 @@ for loop in range(begin, num_loops):
         else:
             x = torch.LongTensor(X_train[i])
             y = torch.LongTensor(y_train[i])
-        train_out = model(x.unsqueeze(0))
+        print(x)
+        print(y)
+        train_out = model(x)
+        print(train_out)
         train_out = train_out[:, -1, :]
         loss = criterion(train_out, y)
         optimizer.zero_grad()
@@ -106,10 +120,10 @@ for loop in range(begin, num_loops):
             print("Iteration\t {} out of {}".format(nth_iter+1, num_loops*(len(X_train))))
             print("\t\t {:.2f}%".format(((1 + nth_iter)*100) / (num_loops*(len(X_train)))))
             print("Loss\t\t {}\n".format(loss.item()))
-            save_path = model_path + "LSTM_iteration_{}.pt".format(nth_iter)
-            torch.save(model.state_dict(), save_path)
-            pickle.dump(losses, open(pickle_path  + "losses.p", "wb"))
-            pickle.dump(train_out.argmax(axis=1), open(pickle_path  + "train_out.p", "wb"))
+            # save_path = model_path + "LSTM_iteration_{}.pt".format(nth_iter)
+            # torch.save(model.state_dict(), save_path)
+            # pickle.dump(losses, open(pickle_path  + "losses.p", "wb"))
+            # pickle.dump(train_out.argmax(axis=1), open(pickle_path  + "train_out.p", "wb"))
         nth_iter += 1
 
         if train_out.argmax(axis=1) == y:
@@ -117,7 +131,7 @@ for loop in range(begin, num_loops):
         
     total = len(X_train)
     train_acc.append(correct / total)
-    pickle.dump(train_acc, open(pickle_path  + "train_acc.p", "wb"))    
+    # pickle.dump(train_acc, open(pickle_path  + "train_acc.p", "wb"))    
     losses.append(loss.item())
     
     for i in range(len(X_val)):
@@ -129,13 +143,13 @@ for loop in range(begin, num_loops):
         val_loss = criterion(val_out, val_y)
         val_losses.append(val_loss)
     
-        pickle.dump(val_losses, open(pickle_path  + "val_losses.p", "wb"))
-        pickle.dump(val_out.argmax(axis=1), open(pickle_path  + "val_out.p", "wb"))
+        # pickle.dump(val_losses, open(pickle_path  + "val_losses.p", "wb"))
+        # pickle.dump(val_out.argmax(axis=1), open(pickle_path  + "val_out.p", "wb"))
         #function accuracy 
         if val_out.argmax(axis=1) == val_y:
             val_correct += 1
     total = len(X_val)
     val_acc.append(val_correct / total)
-    pickle.dump(val_acc, open(pickle_path  + "val_acc.p", "wb"))
+    # pickle.dump(val_acc, open(pickle_path  + "val_acc.p", "wb"))
 
-torch.save(model.state_dict(), model_path + "Last_Model.pt")
+# torch.save(model.state_dict(), model_path + "Last_Model.pt")
