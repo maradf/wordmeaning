@@ -5,6 +5,10 @@ dataset_janne.py
 *.zip
 models2.py
 Models*/
+Results*/
+*.png
+*.pdf
+*.pptx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
