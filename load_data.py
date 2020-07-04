@@ -1,5 +1,10 @@
 """
-Command line arguments, in this order:
+Written by: Dr. Denis Paperno
+Edited and documented by: Mara Fennema
+
+Code to create and load the dataset required for train.py
+
+Code requires the following command line arguments, in this order:
     number of individual pairs in the model, thus half of the maximum individuals.
     number of relations in the model
     n - maximal complexity of examples
