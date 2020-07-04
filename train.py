@@ -243,7 +243,7 @@ def train():
 # Create path-string where model and results will be saved, and ensures that path exists on computer.
 num_indivs = int(sys.argv[1])*2
 save_path = "best_models_{}_indiv/".format(num_indivs)
-pickle_path = "test_accuracies_{}_indiv/"
+pickle_path = "test_accuracies_{}_indiv/".format(num_indivs)
 if not os.path.isdir(save_path):
     os.makedirs(save_path)
 
