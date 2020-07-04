@@ -1,3 +1,21 @@
+"""
+Written by: Dr. Denis Paperno
+Edited and documented by: Mara Fennema
+
+Trains an LSTM which learns interpersonal relationships between a specified
+amount of individuals. 10 LSTMs are trained and the average accuracy is 
+printed at the end. A pickle-file is saved containing all the test-accuracies
+retrieved during training, and a .tsv-file is saved containing the final 
+test-accuracies of all ten models.  
+
+This code depends on code defined in load_data.py. This file requires 
+a number of command line arguments. These arguments are, in this order:
+    number of individual pairs in the model, thus half of the maximum individuals.
+    number of relations in the model
+    n - maximal complexity of examples
+    branching type (l,r,rl)
+"""
+
 import sys
 import torch
 import torch.optim as optim
