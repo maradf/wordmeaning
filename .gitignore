@@ -1,4 +1,15 @@
 practice/
+*.pdf
+*.pptx
+*.png
+*.txt
+*.ipynb
+*.zip
+
+Models*/
+Results_*/
+Denis/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
