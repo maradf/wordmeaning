@@ -1,22 +1,24 @@
-#Denis Paperno, 2018-2020
-#Code for generating interpreted languages with 'personal relations' interpretation
+"""Denis Paperno, 2018-2020
+
+Code for generating interpreted languages with 'personal relations' interpretation
+"""
 
 from collections import defaultdict
 import random
 from sklearn.model_selection import train_test_split
 import torch
 
-'''List of reserved characters
+"""List of reserved characters
 
 at least at the level of logical form the basic elements of the language are encoded 
-as characters. Some characters are reserved for relation names or grammatical words'''
-reserved_chars=['p','f','e','c','t','o','s']
+as characters. Some characters are reserved for relation names or grammatical words"""
+reserved_chars=["p","f","e","c","t","o","s"]
 
 def newUniverse(n):
 	"""generate a list of n names - characters outside of the reserved list"""
 	z=[]
-	i=ord('a')
-	#add entity names to the list starting from 'a'
+	i=ord("a")
+	#add entity names to the list starting from "a"
 	while len(z)<n:
 		ch=chr(i)
 		if ch not in reserved_chars:
@@ -59,14 +61,14 @@ class InterpretedLanguage:
 
         self.reserved_chars = reserved_chars
 
-        chars = list(set(self.reserved_chars + self.names + ['0']))
+        chars = list(set(self.reserved_chars + self.names + ["0"]))
         self.char2idx = {o:i for i,o in enumerate(sorted(chars))}
         self.indiv2idx = {o:i for i,o in enumerate(sorted(self.names))}
 
     def examples(self,i):
-        '''returns all logical forms of complexity (length) i 
+        """returns all logical forms of complexity (length) i 
         
-        A logical form is a string of relation chars followed by an entity name char'''
+        A logical form is a string of relation chars followed by an entity name char"""
         if i<=1: ex=self.names
         else: ex=[x+y for x in self.rel for y in self.examples(i-1)]
         return ex
@@ -77,10 +79,10 @@ class InterpretedLanguage:
         assert len(s)>0
         if len(s)==1 and s in self.names: return s
         elif len(s)>1:
-            if s[0]=='f': return self.friend[self.interpret(s[1:])]
-            elif s[0]=='e': return self.enemy[self.interpret(s[1:])]
-            elif s[0]=='p': return self.parent[self.interpret(s[1:])]
-            elif s[0]=='c': return self.child[self.interpret(s[1:])]
+            if s[0]=="f": return self.friend[self.interpret(s[1:])]
+            elif s[0]=="e": return self.enemy[self.interpret(s[1:])]
+            elif s[0]=="p": return self.parent[self.interpret(s[1:])]
+            elif s[0]=="c": return self.child[self.interpret(s[1:])]
             else: print(s); raise KeyError
 
     def express(self,s,b):
@@ -93,8 +95,8 @@ class InterpretedLanguage:
             r=s[0]
             if r in self.rel:
                 o=random.choice(b)
-                if o=='r': return 't'+r+'o'+self.express(s[1:],b) 
-                elif o=='l': return self.express(s[1:],b)+'s'+r
+                if o=="r": return "t"+r+"o"+self.express(s[1:],b) 
+                elif o=="l": return self.express(s[1:],b)+"s"+r
                 else: raise(KeyError)
             else: raise(KeyError)
         else: raise(KeyError)
@@ -142,63 +144,3 @@ class InterpretedLanguage:
             category=self.interpret(e)
             z.append((line,category))
         return z
-
-    def dataset(self, b):
-        rel_example = self.allexamples(b, complexity =2)
-        rec_example = self.allexamples(b, complexity =3)
-        rec_example = rec_example[len(rel_example):]
-
-        # create equal amount of recursive and non recursive relationships
-        # create test and train set
-        sample = random.sample(rec_example, len(rel_example)) #random sample van de 3 mensen rela
-
-        rel_ex, ind_ex = zip(*rel_example)
-        rel_rec, ind_rec = zip(*sample)
-
-        X_train1, X_test1, y_train1, y_test1 = train_test_split(rel_ex, ind_ex, test_size=0.2)
-        X_train2, X_test2, y_train2, y_test2 = train_test_split(rel_rec, ind_rec, test_size=0.2)
-        X_train_val = X_train1 + X_train2
-        X_test = X_test1 + X_test2
-        y_train_val = y_train1 + y_train2
-        y_test = y_test1 +y_test2
-        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=0.2)
-        
-        for name in self.names:
-            if name not in X_train:
-                X_train.append(name)
-                y_train.append(name)
-        
-        return X_train, y_train, X_val, y_val, X_test, y_test
-
-    def sentence_lengths(self, sentences):
-        lengths = [len(sentence) for sentence in sentences]
-        # return torch.tensor(lengths)
-        return lengths
-
-    def model_input(self, vec, version):
-        """ Changes a list 'vec' to a torch.LongTensor with paddings
-            until length 'max_size' 
-        """
-        
-        # Creates a list of all the characters possible in the strings
-        # including padding value 0
-        chars = list(set(self.reserved_chars + self.names + ['0'])) 
-
-        # Lookup dicts for char to index and index to char
-        char2idx = {o:i for i,o in enumerate(sorted(chars))}
-        idx2char = {i:o for i,o in enumerate(sorted(chars))}
-
-        # Padd the input vector to the specified maximum size
-        # vec = [vec[rel].zfill(max_size) for rel in range(len(vec))]
-        
-        # Create a list with all the right indices and return as longtensor
-        results = [ [] for _ in range(len(vec))]
-        
-        if version == "in":
-            for rel in range(len(vec)):
-                results[rel] = [char2idx[ch] for ch in vec[rel]]
-        elif version == "out":
-            for rel in range(len(vec)):
-                results[rel] = [self.indiv2idx[ch] for ch in vec[rel]]
-        # print(results.shape())
-        return results
