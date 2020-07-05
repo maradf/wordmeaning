@@ -9,6 +9,7 @@ Code requires the following command line arguments, in this order:
     number of relations in the model
     n - maximal complexity of examples
     branching type (l,r,rl)
+    (optional) proportion of examples of complexity n included in the training data
 """
 
 import sys

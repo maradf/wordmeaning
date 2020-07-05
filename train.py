@@ -14,6 +14,11 @@ a number of command line arguments. These arguments are, in this order:
     number of relations in the model
     n - maximal complexity of examples
     branching type (l,r,rl)
+    (optional) proportion of examples of complexity n included in the training data
+    
+One additional optional command line argument for this file specifically is,
+as the last argument the following:
+    (optional) when a birdirectional LSTM is desired, the word bidirectional
 """
 
 import sys
@@ -107,7 +112,7 @@ def train_epoch(model, train_data, loss_function, optimizer, word_to_ix, label_t
     # Calculate average loss and print this and the accuracy of this epoch.
     avg_loss /= len(train_data)
 
-    print("Epoch {} done! \n train avg_loss: {}, acc: {}\n\n".format(i, avg_loss, get_accuracy(truths,predictions)))
+    print("Epoch {} done! \ntrain avg_loss: {}, acc: {}".format(i, avg_loss, get_accuracy(truths,predictions)))
 
 
 def evaluate(model, data, loss_function, word_to_ix, label_to_ix, name="val"):
@@ -211,7 +216,7 @@ def train():
         # gradually increases
         train_data_filtered = [x for x in train_data if len(x[0]) < curriculum(i)]
         
-        print("Epoch: {} start.".format(i))
+        print("\n\nEpoch: {} start.".format(i))
 
         # Train one epoch
         train_epoch(model, train_data_filtered, criterion, optimizer, word_to_ix, label_to_ix, i)
@@ -260,8 +265,8 @@ def train():
 
 # Create path-string where model and results will be saved, and ensures that path exists on computer.
 num_indivs = int(sys.argv[1])*2
-save_path = "best_models_{}_indiv/".format(num_indivs)
-pickle_path = "test_accuracies_{}_indiv/".format(num_indivs)
+save_path = "best_models_" + "_".join(sys.argv[1:]) + "/"
+pickle_path = "test_accuracies_" + "_".join(sys.argv[1:]) + "/"
 if not os.path.isdir(save_path):
     os.makedirs(save_path)
 
@@ -298,7 +303,7 @@ with open("accuracies_" + "_".join(sys.argv[1:]) + "_{}dim.tsv".format(hidden), 
 average_test_acc /= runs
 
 # Save the test accuracies over time using pickle. 
-pickle.dump(losses, open(pickle_path  + "accuracy.p", "wb"))
+pickle.dump(epoch_test_accuracies, open(pickle_path  + "accuracy.p", "wb"))
 
 print("Done. ")
 print("Average test accuracy = {}".format(average_test_acc))
