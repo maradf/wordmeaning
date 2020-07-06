@@ -4,13 +4,16 @@ import pickle
 import numpy as np
 import pandas as pd
 
-def plot_test_accuracies():
+def plot_test_accuracies(n_indivs=""):
     path = "Test Accuracies/"
     for folder in os.listdir(path):
+        if n_indivs:
+            if n_indivs not in folder:
+                if os.listdir(path).index(folder) == len(os.listdir(path)):
+                    raise "The chosen integer has no data."
+                continue
         filepath = path + folder + "/" + os.listdir(path+folder)[0]
-        print(filepath)
         accs = pickle.load(open(filepath, "rb"))
-        print(accs[0])
         for i in range(len(accs)):
             non_zero_index = 0
             for j in range(len(accs[i])):
@@ -21,6 +24,8 @@ def plot_test_accuracies():
             plt.figure(i+1)
             plt.title(filepath)
             plt.plot(x, y)
+            plt.xlabel("Epochs")
+            plt.ylabel("Accuracy")
         plt.show()
 
 def plot_final_accuaries():
@@ -39,12 +44,16 @@ def plot_final_accuaries():
     plt.figure(1)
     plt.title("Non-bidirectional accuracies")
     plt.plot(x, non_bidirectional)
+    plt.xlabel("Number of individuals")
+    plt.ylabel("Accuracy")
 
     x = range(4, len(bidirectional)*2+4, 2)
     plt.figure(2)
     plt.title("Bidirectional accuracies")
     plt.plot(x, bidirectional)
+    plt.xlabel("Number of individuals")
+    plt.ylabel("Accuracy")
     plt.show()
 
-# plot_test_accuracies()
-plot_final_accuaries()
+plot_test_accuracies("_4_")
+# plot_final_accuaries()
