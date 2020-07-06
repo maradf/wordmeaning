@@ -1,5 +1,5 @@
 """
-Written by: Dr. Denis Paperno
+Written by: Dr. Denis Paperno (Paperno (2018))
 Edited and documented by: Mara Fennema
 
 Code to create and load the dataset required for train.py
