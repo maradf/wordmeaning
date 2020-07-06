@@ -1,16 +1,41 @@
+"""
+Written by: Mara Fennema
+
+Contains functions to plot the all the accuracies saved to files by train.py.
+"""
+
 import matplotlib.pyplot as plt
 import os
 import pickle
 import numpy as np
 import pandas as pd
 
-def plot_test_accuracies(n_indivs=""):
-    path = "Test Accuracies/"
+def plot_test_accuracies(path, n_indivs=""):
+    """Plots the test accuracies over time of all models of one number of 
+    individuals at the same time. Does this both for the bidirectional models
+    as the non-bidirectional models.
+
+    Args:
+        path (string): The path where the folders with data are found. 
+        n_indivs (string): The desired number of individuals, preceded and 
+        followed by an underscore.
+    
+    Example:
+        plot_test_accuracies("Test Accuracies/", "_4_")
+            This results in the plots of all runs for 4 individuals, both
+            the plots of the bidirectional models and the 
+            non-bidirectional models, all of which can be found in the 
+            folder called Test Accuracies.
+
+    """
     for folder in os.listdir(path):
+        
+        # Check if this iteration of the loop needs to be skipped for it does not 
+        # contain the specified number of individuals.
         if n_indivs:
             if n_indivs not in folder:
-                if os.listdir(path).index(folder) == len(os.listdir(path)):
-                    raise "The chosen integer has no data."
+                if os.listdir(path).index(folder) == len(os.listdir(path)) - 1:
+                    print("The chosen number has no data. Please try another value.")
                 continue
         filepath = path + folder + "/" + os.listdir(path+folder)[0]
         accs = pickle.load(open(filepath, "rb"))
@@ -28,7 +53,14 @@ def plot_test_accuracies(n_indivs=""):
             plt.ylabel("Accuracy")
         plt.show()
 
-def plot_final_accuaries():
+def plot_final_accuaries(path):
+    """Creates a plot with the mean accuracy of all final models, to compare
+    the different accuracies for the differnt numbers of individuals.
+
+    Args:
+        path (string): Path to where all the accuracy files can be found. 
+
+    """
     path = "Accuracy files/"
     non_bidirectional = []
     bidirectional = []
@@ -55,5 +87,5 @@ def plot_final_accuaries():
     plt.ylabel("Accuracy")
     plt.show()
 
-plot_test_accuracies("_4_")
-# plot_final_accuaries()
+# plot_test_accuracies("Test Accuracies/", "_4_")
+# plot_final_accuaries("Accuracy files/")
