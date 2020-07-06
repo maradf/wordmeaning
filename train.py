@@ -30,9 +30,6 @@ import load_data
 from universe import InterpretedLanguage
 from models import myLSTM
 
-import unicodedata
-import string
-
 import numpy as np
 import os
 import shutil

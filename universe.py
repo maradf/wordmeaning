@@ -5,7 +5,6 @@ Code for generating interpreted languages with 'personal relations' interpretati
 
 from collections import defaultdict
 import random
-from sklearn.model_selection import train_test_split
 import torch
 
 """List of reserved characters
